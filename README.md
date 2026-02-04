@@ -1,2 +1,2 @@
-# job4j_go_lang_base
-Job4j Go
+# Job4j Go repository
+Учебный репозиторий для проектов на Go
