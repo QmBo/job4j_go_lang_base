@@ -26,7 +26,7 @@ func NewLruCache(capacity int) (*LruCache, error) {
 }
 
 func (c *LruCache) Put(key string, value string) {
-	node := find(c.Head, key)
+	node := c.find(key)
 	if node != nil {
 		node.Value = value
 		return
@@ -35,41 +35,46 @@ func (c *LruCache) Put(key string, value string) {
 }
 
 func (c *LruCache) Get(key string) *string {
-	var res *string
-	node := find(c.Head, key)
-	if node != nil {
-		res = &node.Value
-		c.reorder(node)
+	node := c.find(key)
+	if node == nil {
+		return nil
 	}
+	res := &node.Value
+	c.reorder(node)
 	return res
 }
 
-func find(node *Node, key string) *Node {
-	if node != nil {
-		if node.Key == key {
-			return node
+func (c *LruCache) find(key string) *Node {
+	if c.size == 0 {
+		return nil
+	}
+	res := c.Head
+	for i := 0; i < c.size; i++ {
+		if res.Key == key {
+			return res
 		}
-		return find(node.Next, key)
+		res = res.Next
 	}
 	return nil
 }
 
 func (c *LruCache) reorder(node *Node) {
-	if node != c.Head {
-		node.Prev.Next = node.Next
-		if node.Prev == c.Head {
-			node.Prev.Prev = node
-		}
-		if node.Next != nil {
-			node.Next.Prev = node.Prev
-		}
-		if node.Next == nil {
-			c.Tail = node.Prev
-		}
-		node.Prev = nil
-		node.Next = c.Head
-		c.Head = node
+	if node == c.Head {
+		return
 	}
+	node.Prev.Next = node.Next
+	if node.Prev == c.Head {
+		node.Prev.Prev = node
+	}
+	if node.Next != nil {
+		node.Next.Prev = node.Prev
+	}
+	if node.Next == nil {
+		c.Tail = node.Prev
+	}
+	node.Prev = nil
+	node.Next = c.Head
+	c.Head = node
 }
 
 func (c *LruCache) trimPut(key string, value string) {
