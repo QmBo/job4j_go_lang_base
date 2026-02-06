@@ -21,3 +21,29 @@ func (t *Tracker) GetItems() []Item {
 	copy(res, t.items)
 	return res
 }
+
+func (t *Tracker) GetItem(index int) Item {
+	return t.items[index]
+}
+
+func (t *Tracker) IndexOf(item Item) int {
+	for i := range t.items {
+		if t.items[i] == item {
+			return i
+		}
+	}
+	return -1
+}
+
+func (t *Tracker) Update(index int, item Item) []Item {
+	t.items[index] = item
+	res := make([]Item, len(t.items))
+	copy(res, t.items)
+	return res
+}
+
+func (t *Tracker) RemoveItem(index int) Item {
+	res := t.items[index]
+	t.items = append(t.items[:index], t.items[index+1:]...)
+	return res
+}
