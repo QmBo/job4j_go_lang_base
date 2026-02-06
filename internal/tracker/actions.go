@@ -114,6 +114,6 @@ func (u UpdateUseCase) Desc() string {
 
 func printItems(items []Item, out Output) {
 	for _, item := range items {
-		out.Out(fmt.Sprintf("%s", item.toString()))
+		out.Out(item.toString())
 	}
 }

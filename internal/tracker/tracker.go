@@ -41,7 +41,7 @@ func (t *Tracker) GetByPosition(position int) (Item, error) {
 			return item, nil
 		}
 	}
-	return Item{}, errors.New(fmt.Sprintf("element number %d not found", position))
+	return Item{}, fmt.Errorf("element number %d not found", position)
 }
 
 func (t *Tracker) Update(index int, item Item) {
