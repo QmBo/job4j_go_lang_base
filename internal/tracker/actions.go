@@ -18,7 +18,10 @@ func (u AddUseCase) Done(in Input, out Output, tracker *Tracker) {
 	out.Out("enter name:")
 	name := in.Get()
 	id := uuid.New().String()
-	tracker.AddItem(Item{Name: name, ID: id})
+	_, err := tracker.AddItem(Item{Name: name, ID: id})
+	if err != nil {
+		out.Out("failed to add item")
+	}
 }
 func (u AddUseCase) Desc() string {
 	return "Add Element"
