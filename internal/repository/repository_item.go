@@ -41,7 +41,7 @@ func (r *RepoPg) Get(ctx context.Context, id string) (trackerstore.Item, error) 
 	var it trackerstore.Item
 	err := r.pool.QueryRow(
 		ctx,
-		`select id, name from items where id = $1`,
+		`select id, name, position from items where id = $1`,
 		id,
 	).Scan(&it.ID, &it.Name, &it.Position)
 
@@ -82,11 +82,37 @@ func (r *RepoPg) Update(ctx context.Context, position int, item trackerstore.Ite
 	return nil
 }
 
+func (r *RepoPg) UpdateByID(ctx context.Context, item trackerstore.Item) error {
+	_, err := r.pool.Exec(
+		ctx,
+		`update items set name = $2 where id = $1`,
+		item.ID, item.Name,
+	)
+	if err != nil {
+		return trackerstore.ErrRPoolExec(err)
+	}
+
+	return nil
+}
+
 func (r *RepoPg) Delete(ctx context.Context, position int) error {
 	_, err := r.pool.Exec(
 		ctx,
 		`delete from items where position = $1`,
 		position,
+	)
+	if err != nil {
+		return trackerstore.ErrRPoolExec(err)
+	}
+
+	return nil
+}
+
+func (r *RepoPg) DeleteByID(ctx context.Context, id string) error {
+	_, err := r.pool.Exec(
+		ctx,
+		`delete from items where id = $1`,
+		id,
 	)
 	if err != nil {
 		return trackerstore.ErrRPoolExec(err)
