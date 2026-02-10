@@ -110,11 +110,12 @@ func Test_Tracker(t *testing.T) {
 		}
 		tracker.AddItem(item)
 		item2 := base.Item{
-			ID:   "2",
+			ID:   "1",
 			Name: "Second Item",
 		}
-		tracker.Update(0, item2)
+		update := tracker.Update(item2)
 
-		assert.Equal(t, item2, tracker.GetItems()[0])
+		assert.Equal(t, 1, len(update))
+		assert.Equal(t, item2, update[0])
 	})
 }

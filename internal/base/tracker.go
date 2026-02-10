@@ -35,8 +35,12 @@ func (t *Tracker) IndexOf(item Item) int {
 	return -1
 }
 
-func (t *Tracker) Update(index int, item Item) []Item {
-	t.items[index] = item
+func (t *Tracker) Update(item Item) []Item {
+	for i := range t.items {
+		if t.items[i].ID == item.ID {
+			t.items[i] = item
+		}
+	}
 	res := make([]Item, len(t.items))
 	copy(res, t.items)
 	return res
