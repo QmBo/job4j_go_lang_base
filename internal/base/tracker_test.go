@@ -39,8 +39,24 @@ func Test_Tracker(t *testing.T) {
 		tracker.AddItem(item)
 		res := tracker.GetItems()
 		assert.Equal(t, 1, len(res))
-		indexOf := tracker.IndexOf(item)
+		indexOf, err := tracker.IndexOf(item)
+		assert.Equal(t, nil, err)
 		assert.Equal(t, 0, indexOf)
+	})
+	t.Run("get item - item not found", func(t *testing.T) {
+		t.Parallel()
+
+		tracker := base.NewTracker()
+		item := base.Item{
+			ID:   "1",
+			Name: "First Item",
+		}
+		tracker.AddItem(item)
+		res := tracker.GetItems()
+		assert.Equal(t, 1, len(res))
+		indexOf, err := tracker.IndexOf(base.Item{ID: "999"})
+		assert.Equal(t, "item not found", err.Error())
+		assert.Equal(t, -1, indexOf)
 	})
 	t.Run("get item", func(t *testing.T) {
 		t.Parallel()
@@ -81,7 +97,8 @@ func Test_Tracker(t *testing.T) {
 		}
 		tracker.AddItem(item2)
 
-		res := tracker.IndexOf(item)
+		res, err := tracker.IndexOf(item)
+		assert.Nil(t, err)
 		assert.Equal(t, 1, res)
 
 		removeItem := tracker.RemoveItem(res)
@@ -113,9 +130,28 @@ func Test_Tracker(t *testing.T) {
 			ID:   "1",
 			Name: "Second Item",
 		}
-		update := tracker.Update(item2)
+		update, err := tracker.Update(item2)
 
+		assert.Nil(t, err)
 		assert.Equal(t, 1, len(update))
 		assert.Equal(t, item2, update[0])
+	})
+	t.Run("update item - item not found", func(t *testing.T) {
+		t.Parallel()
+
+		tracker := base.NewTracker()
+		item := base.Item{
+			ID:   "1",
+			Name: "First Item",
+		}
+		tracker.AddItem(item)
+		item2 := base.Item{
+			ID:   "2",
+			Name: "Second Item",
+		}
+
+		update, err := tracker.Update(item2)
+		assert.Equal(t, "item not found", err.Error())
+		assert.Equal(t, 0, len(update))
 	})
 }

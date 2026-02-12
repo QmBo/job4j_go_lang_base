@@ -1,5 +1,7 @@
 package base
 
+import "fmt"
+
 type Item struct {
 	ID   string
 	Name string
@@ -26,24 +28,22 @@ func (t *Tracker) GetItem(index int) Item {
 	return t.items[index]
 }
 
-func (t *Tracker) IndexOf(item Item) int {
-	for i := range t.items {
-		if t.items[i] == item {
-			return i
-		}
-	}
-	return -1
-}
-
-func (t *Tracker) Update(item Item) []Item {
+func (t *Tracker) IndexOf(item Item) (int, error) {
 	for i := range t.items {
 		if t.items[i].ID == item.ID {
-			t.items[i] = item
+			return i, nil
 		}
 	}
-	res := make([]Item, len(t.items))
-	copy(res, t.items)
-	return res
+	return -1, fmt.Errorf("item not found")
+}
+
+func (t *Tracker) Update(item Item) ([]Item, error) {
+	i, err := t.IndexOf(item)
+	if err != nil {
+		return []Item{}, fmt.Errorf("item not found")
+	}
+	t.items[i] = item
+	return t.GetItems(), nil
 }
 
 func (t *Tracker) RemoveItem(index int) Item {
