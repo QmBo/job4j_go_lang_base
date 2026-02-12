@@ -40,13 +40,13 @@ func (u AddUseCase) Done(
 
 	lastPosition, err := store.GetLastPosition(ctx)
 	if err != nil {
-		return ErrGetLastPosition(err)
+		return fmt.Errorf("failed to find last position : %w", err)
 	}
 	if err := store.Create(
 		ctx,
 		Item{ID: id, Name: name, Position: lastPosition + 1},
 	); err != nil {
-		return ErrCreate(err)
+		return fmt.Errorf("failed to create items: %w", err)
 	}
 	return nil
 }
@@ -65,7 +65,7 @@ func (u GetUseCase) Done(
 ) error {
 	items, err := store.List(ctx)
 	if err != nil {
-		return ErrGet(err)
+		return fmt.Errorf("failed to get items: %w", err)
 	}
 	printItems(items, out)
 	return nil
@@ -100,7 +100,7 @@ func (u UpdateUseCase) Done(
 		newName := in.Get()
 		item.Name = newName
 		if err = store.Update(ctx, position, item); err != nil {
-			return ErrUpdate(err)
+			return fmt.Errorf("failed to update items: %w", err)
 		}
 		out.Out(fmt.Sprintf("element on position %d updated", position))
 		return nil
@@ -128,11 +128,11 @@ func (u DeleteUseCase) Done(
 			continue
 		}
 		if err = store.Delete(ctx, position); err != nil {
-			return ErrDelete(err)
+			return fmt.Errorf("failed to delete items: %w", err)
 		}
 		out.Out(fmt.Sprintf("element on position %d deleted", position))
 		if err = store.Reorder(ctx, position); err != nil {
-			return ErrReorderAfterDelete(err)
+			return fmt.Errorf("failed to reorder after delete items: %w", err)
 		}
 		return nil
 	}
@@ -154,7 +154,7 @@ func (u FindUseCase) Done(
 	name := in.Get()
 	find, err := store.Find(ctx, name)
 	if err != nil {
-		return ErrFind(err)
+		return fmt.Errorf("failed to find items: %w", err)
 	}
 	out.Out("found elements:")
 	printItems(find, out)

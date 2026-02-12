@@ -34,7 +34,7 @@ func (u UI) Run() error {
 		}
 
 		if err := action.Done(u.Cotext, u.In, u.Out, u.Store); err != nil {
-			return ErrUi(err)
+			return fmt.Errorf("ui problem: %w", err)
 		}
 	}
 

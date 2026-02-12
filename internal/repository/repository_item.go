@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,7 +25,7 @@ func (r *RepoPg) Create(ctx context.Context, it trackerstore.Item) error {
 		it.ID, it.Name, it.Position,
 	)
 	if err != nil {
-		return trackerstore.ErrRPoolExec(err)
+		return fmt.Errorf("r.pool.Exec: %w", err)
 	}
 	return nil
 }
@@ -32,8 +33,9 @@ func (r *RepoPg) Create(ctx context.Context, it trackerstore.Item) error {
 func (r *RepoPg) List(ctx context.Context) ([]trackerstore.Item, error) {
 	rows, err := r.pool.Query(ctx, `select id, name, position from items order by position`)
 	if err != nil {
-		return nil, trackerstore.ErrRPoolQuery(err)
+		return nil, fmt.Errorf("r.pool.Query: %w", err)
 	}
+	defer rows.Close()
 	return getList(rows)
 }
 
@@ -46,7 +48,7 @@ func (r *RepoPg) Get(ctx context.Context, id string) (trackerstore.Item, error) 
 	).Scan(&it.ID, &it.Name, &it.Position)
 
 	if err != nil {
-		return it, trackerstore.ErrRPoolQueryRow(err)
+		return it, fmt.Errorf("r.pool.QueryRow: %w", err)
 	}
 	return it, nil
 }
@@ -63,7 +65,7 @@ func (r *RepoPg) GetLastPosition(ctx context.Context) (int, error) {
 	}
 
 	if err != nil {
-		return -1, trackerstore.ErrRPoolQueryRow(err)
+		return -1, fmt.Errorf("r.pool.QueryRow: %w", err)
 	}
 
 	return position, nil
@@ -76,7 +78,7 @@ func (r *RepoPg) Update(ctx context.Context, position int, item trackerstore.Ite
 		position, item.Name,
 	)
 	if err != nil {
-		return trackerstore.ErrRPoolExec(err)
+		return fmt.Errorf("r.pool.Exec: %w", err)
 	}
 
 	return nil
@@ -89,7 +91,7 @@ func (r *RepoPg) Delete(ctx context.Context, position int) error {
 		position,
 	)
 	if err != nil {
-		return trackerstore.ErrRPoolExec(err)
+		return fmt.Errorf("r.pool.Exec: %w", err)
 	}
 
 	return nil
@@ -99,9 +101,9 @@ func (r *RepoPg) Find(ctx context.Context, name string) ([]trackerstore.Item, er
 	rows, err := r.pool.Query(
 		ctx,
 		`select id, name, position from items where name like $1 order by position`,
-		"%"+name+"%")
+		fmt.Sprint("%", name, "%"))
 	if err != nil {
-		return nil, trackerstore.ErrRPoolQuery(err)
+		return nil, fmt.Errorf("r.pool.Query: %w", err)
 	}
 	return getList(rows)
 }
@@ -113,9 +115,9 @@ func (r *RepoPg) Reorder(ctx context.Context, position int) error {
 		position,
 	)
 	if err != nil {
-		return trackerstore.ErrRPoolQuery(err)
+		return fmt.Errorf("r.pool.Query: %w", err)
 	}
-
+	defer rows.Close()
 	return r.changePositions(ctx, rows)
 }
 
@@ -127,19 +129,17 @@ func (r *RepoPg) GetByPosition(ctx context.Context, position int) (trackerstore.
 		position,
 	).Scan(&it.ID, &it.Name, &it.Position)
 	if err != nil {
-		return it, trackerstore.ErrRPoolQueryRow(err)
+		return it, fmt.Errorf("r.pool.QueryRow: %w", err)
 	}
 
 	return it, nil
 }
 
 func (r *RepoPg) changePositions(ctx context.Context, rows pgx.Rows) error {
-	defer rows.Close()
-
 	for rows.Next() {
 		var it trackerstore.Item
 		if err := rows.Scan(&it.ID, &it.Position); err != nil {
-			return trackerstore.ErrRRowScan(err)
+			return fmt.Errorf("r.row.Scan: %w", err)
 		}
 		_, err := r.pool.Exec(
 			ctx,
@@ -147,26 +147,24 @@ func (r *RepoPg) changePositions(ctx context.Context, rows pgx.Rows) error {
 			it.Position-1, it.ID,
 		)
 		if err != nil {
-			return trackerstore.ErrRPoolExec(err)
+			return fmt.Errorf("r.pool.Exec: %w", err)
 		}
 	}
 	return nil
 }
 
 func getList(rows pgx.Rows) ([]trackerstore.Item, error) {
-	defer rows.Close()
-
 	var items []trackerstore.Item
 	for rows.Next() {
 		var item trackerstore.Item
 		if err := rows.Scan(&item.ID, &item.Name, &item.Position); err != nil {
-			return nil, trackerstore.ErrRRowScan(err)
+			return nil, fmt.Errorf("r.row.Scan: %w", err)
 		}
 		items = append(items, item)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, trackerstore.ErrRRowError(err)
+		return nil, fmt.Errorf("r.row.Err: %w", err)
 	}
 
 	return items, nil
