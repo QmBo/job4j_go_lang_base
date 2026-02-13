@@ -98,6 +98,7 @@ func Test_Tracker(t *testing.T) {
 			Name: "John Doe",
 		}
 		_, err := tracker.AddItem(item)
+		assert.Nil(t, err)
 
 		find, err := tracker.GetByPosition(2)
 		assert.Equal(t, ErrNotFound, err)
@@ -112,6 +113,7 @@ func Test_Tracker(t *testing.T) {
 			Name: "John Doe",
 		}
 		_, err := tracker.AddItem(item)
+		assert.Nil(t, err)
 
 		find, err := tracker.GetByPosition(1)
 		assert.Nil(t, err)
