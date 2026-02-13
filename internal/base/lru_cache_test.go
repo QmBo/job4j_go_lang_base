@@ -117,4 +117,13 @@ func Test_LruCache(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, "capacity must be greater than zero", err.Error())
 	})
+	t.Run("put same id", func(t *testing.T) {
+		t.Parallel()
+		cache, err := base.NewLruCache(3)
+		assert.Nil(t, err)
+		cache.Put("1", "a")
+		cache.Put("1", "b")
+		get := cache.Get("1")
+		assert.Equal(t, "b", *get)
+	})
 }

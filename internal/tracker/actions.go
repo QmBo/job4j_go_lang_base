@@ -105,7 +105,10 @@ func (u UpdateUseCase) Done(in Input, out Output, tracker *Tracker) {
 		out.Out(fmt.Sprintf("enter new name for update: %s", item.toString()))
 		newName := in.Get()
 		item.Name = newName
-		tracker.Update(position-1, item)
+		_, err = tracker.Update(item.ID, item)
+		if err != nil {
+			out.Out(err.Error())
+		}
 		out.Out(fmt.Sprintf("updated item: %s", item.toString()))
 		return
 	}

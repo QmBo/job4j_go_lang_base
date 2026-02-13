@@ -45,11 +45,17 @@ func (t *Tracker) GetByPosition(position int) (Item, error) {
 			return item, nil
 		}
 	}
-	return Item{}, ErrPositionNotFound(position)
+	return Item{}, ErrNotFound
 }
 
-func (t *Tracker) Update(index int, item Item) {
-	t.items[index] = item
+func (t *Tracker) Update(id string, item Item) (Item, error) {
+	for i := range t.items {
+		if t.items[i].ID == id {
+			t.items[i].position = item.position
+			return item, nil
+		}
+	}
+	return Item{}, ErrNotFound
 }
 
 func (t *Tracker) RemoveItem(position int) (Item, error) {
@@ -67,7 +73,7 @@ func (t *Tracker) RemoveItem(position int) (Item, error) {
 
 func (t *Tracker) Find(name string) ([]Item, error) {
 	if len(t.items) == 0 {
-		return []Item{}, ErrNoRecords
+		return []Item{}, ErrNotFound
 	}
 	res := make([]Item, 0, len(t.items))
 	for _, item := range t.items {

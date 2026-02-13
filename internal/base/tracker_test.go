@@ -115,6 +115,22 @@ func Test_Tracker(t *testing.T) {
 		}
 		tracker.Update(0, item2)
 
-		assert.Equal(t, item2, tracker.GetItems()[0])
+		assert.Equal(t, item2, tracker.GetItem(0))
+	})
+	t.Run("index - error", func(t *testing.T) {
+		t.Parallel()
+
+		tracker := base.NewTracker()
+		item := base.Item{
+			ID:   "1",
+			Name: "First Item",
+		}
+		tracker.AddItem(item)
+		item2 := base.Item{
+			ID:   "2",
+			Name: "Second Item",
+		}
+		of := tracker.IndexOf(item2)
+		assert.Equal(t, -1, of)
 	})
 }
